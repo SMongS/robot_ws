@@ -1,0 +1,211 @@
+<?xml version="1.0"?>
+<robot name="manipulateur_mobile_dessinateur">
+
+  <!-- ================= MATÉRIAUX ================= -->
+  <material name="chassis_blanc">
+    <color rgba="0.88 0.88 0.90 1.0"/>
+  </material>
+  <material name="robot_orange">
+    <color rgba="0.95 0.45 0.05 1.0"/>
+  </material>
+  <material name="gris_fonce">
+    <color rgba="0.2 0.2 0.22 1.0"/>
+  </material>
+  <material name="noir_pneu">
+    <color rgba="0.1 0.1 0.1 1.0"/>
+  </material>
+  <material name="rouge_feutre">
+    <color rgba="0.9 0.1 0.1 1.0"/>
+  </material>
+
+  <!-- ================= 1. BASE FOOTPRINT ================= -->
+  <link name="base_footprint"/>
+
+  <joint name="joint_base_footprint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0.08" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ================= 2. CHÂSSIS ================= -->
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0.04" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.45 0.35 0.1"/>
+      </geometry>
+      <material name="chassis_blanc"/>
+    </visual>
+  </link>
+
+  <!-- ================= 3. ROUES GAUCHES (SYNCHRONISÉES) ================= -->
+  <!-- Roue Avant Gauche (JOINT MAÎTRE) -->
+  <link name="roue_av_g">
+    <visual>
+      <geometry><cylinder radius="0.06" length="0.04"/></geometry>
+      <material name="noir_pneu"/>
+    </visual>
+  </link>
+  <joint name="joint_roues_gauches" type="continuous">
+    <parent link="base_link"/>
+    <child link="roue_av_g"/>
+    <origin xyz="0.15 0.19 -0.02" rpy="-1.5708 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+
+  <!-- Roue Arrière Gauche (MIMIC: Imite la roue avant gauche) -->
+  <link name="roue_ar_g">
+    <visual>
+      <geometry><cylinder radius="0.06" length="0.04"/></geometry>
+      <material name="noir_pneu"/>
+    </visual>
+  </link>
+  <joint name="joint_roue_ar_g" type="continuous">
+    <parent link="base_link"/>
+    <child link="roue_ar_g"/>
+    <origin xyz="-0.15 0.19 -0.02" rpy="-1.5708 0 0"/>
+    <axis xyz="0 0 1"/>
+    <mimic joint="joint_roues_gauches" multiplier="1.0" offset="0.0"/>
+  </joint>
+
+  <!-- ================= 4. ROUES DROITES (SYNCHRONISÉES) ================= -->
+  <!-- Roue Avant Droite (JOINT MAÎTRE) -->
+  <link name="roue_av_d">
+    <visual>
+      <geometry><cylinder radius="0.06" length="0.04"/></geometry>
+      <material name="noir_pneu"/>
+    </visual>
+  </link>
+  <joint name="joint_roues_droites" type="continuous">
+    <parent link="base_link"/>
+    <child link="roue_av_d"/>
+    <origin xyz="0.15 -0.19 -0.02" rpy="1.5708 0 0"/>
+    <axis xyz="0 0 -1"/>
+  </joint>
+
+  <!-- Roue Arrière Droite (MIMIC: Imite la roue avant droite) -->
+  <link name="roue_ar_d">
+    <visual>
+      <geometry><cylinder radius="0.06" length="0.04"/></geometry>
+      <material name="noir_pneu"/>
+    </visual>
+  </link>
+  <joint name="joint_roue_ar_d" type="continuous">
+    <parent link="base_link"/>
+    <child link="roue_ar_d"/>
+    <origin xyz="-0.15 -0.19 -0.02" rpy="1.5708 0 0"/>
+    <axis xyz="0 0 -1"/>
+    <mimic joint="joint_roues_droites" multiplier="1.0" offset="0.0"/>
+  </joint>
+
+  <!-- ================= 5. SOCLE DU BRAS ================= -->
+  <link name="socle_bras_link">
+    <visual>
+      <origin xyz="0 0 0.02" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.08" length="0.04"/>
+      </geometry>
+      <material name="gris_fonce"/>
+    </visual>
+  </link>
+
+  <joint name="joint_socle" type="fixed">
+    <parent link="base_link"/>
+    <child link="socle_bras_link"/>
+    <origin xyz="0.05 0 0.09" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ================= 6. AXE 1 : ROTATION BASE ================= -->
+  <link name="epaule_link">
+    <visual>
+      <origin xyz="0 0 0.04" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.06" length="0.08"/>
+      </geometry>
+      <material name="robot_orange"/>
+    </visual>
+  </link>
+
+  <joint name="joint_1_base_rotation" type="revolute">
+    <parent link="socle_bras_link"/>
+    <child link="epaule_link"/>
+    <origin xyz="0 0 0.04" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.1415" upper="3.1415" effort="100" velocity="1.5"/>
+  </joint>
+
+  <!-- ================= 7. AXE 2 : ÉPAULE (LEVAGE) ================= -->
+  <link name="bras_link">
+    <visual>
+      <origin xyz="0 0 0.15" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.06 0.05 0.3"/>
+      </geometry>
+      <material name="chassis_blanc"/>
+    </visual>
+  </link>
+
+  <joint name="joint_2_epaule" type="revolute">
+    <parent link="epaule_link"/>
+    <child link="bras_link"/>
+    <origin xyz="0 0.05 0.06" rpy="0 0.4 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.6" upper="1.6" effort="150" velocity="1.5"/>
+  </joint>
+
+  <!-- ================= 8. AXE 3 : COUDE ================= -->
+  <link name="avant_bras_link">
+    <visual>
+      <origin xyz="0 0 0.12" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.045 0.04 0.24"/>
+      </geometry>
+      <material name="robot_orange"/>
+    </visual>
+  </link>
+
+  <joint name="joint_3_coude" type="revolute">
+    <parent link="bras_link"/>
+    <child link="avant_bras_link"/>
+    <origin xyz="0 -0.045 0.3" rpy="0 -0.8 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-2.2" upper="2.2" effort="100" velocity="1.5"/>
+  </joint>
+
+  <!-- ================= 9. AXE 4 : POIGNET (INCLINAISON) ================= -->
+  <link name="poignet_link">
+    <visual>
+      <origin xyz="0 0 0.02" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.03" length="0.04"/>
+      </geometry>
+      <material name="gris_fonce"/>
+    </visual>
+  </link>
+
+  <joint name="joint_4_poignet" type="revolute">
+    <parent link="avant_bras_link"/>
+    <child link="poignet_link"/>
+    <origin xyz="0 0 0.24" rpy="0 0.4 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.8" upper="1.8" effort="50" velocity="2.0"/>
+  </joint>
+
+  <!-- ================= 10. STYLO (FIXÉ AU POIGNET) ================= -->
+  <link name="stylo_link">
+    <visual>
+      <origin xyz="0 0 0.05" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.007" length="0.10"/>
+      </geometry>
+      <material name="rouge_feutre"/>
+    </visual>
+  </link>
+
+  <joint name="joint_stylo" type="fixed">
+    <parent link="poignet_link"/>
+    <child link="stylo_link"/>
+    <origin xyz="0 0 0.04" rpy="0 0 0"/>
+  </joint>
+
+</robot>
